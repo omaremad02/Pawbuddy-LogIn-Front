@@ -1,83 +1,113 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css'; 
+import axios from 'axios';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const [userRole, setUserRole] = useState('Admin');
+  const [email, setEmailOrUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('Admin');
+  const isEmail = (value) => /\S+@\S+\.\S+/.test(value);
 
-  const handleLogin = (e) => {
+  if (!role) {
+    alert('Please select a role before logging in.');
+    return;
+  }
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    
-    console.log("Login submitted with user role:", userRole);
+    const loginField = isEmail(email) ? { email } : { phoneNumber: email };
+    try {
+      const response = await axios.post('http://localhost:5000/api/admin/login', {
+        ...loginField,
+        password,
+        role,
+      });
+
+      console.log('Login Successful:', response.data);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Login Failed:', error.response?.data || error.message);
+      alert('Login failed. Please check your credentials and try again.');
+    }
   };
 
   const handleRoleChange = (role) => {
-    setUserRole(role);
+    setRole(role);
   };
 
   return (
     <div className={styles.container}>
-        <div className={styles.card}>
-          <h1 className={styles.title}>Log In</h1>
-          <p className={styles.subtitle}>
-            Please enter your credentials.
-          </p>
-          <form onSubmit={handleLogin} className={styles.form}>
-            <input
-              type="email"
-              placeholder="Your email"
-              className={styles.input}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              className={styles.input}
-              required
-            />
-            <div className={styles.roleSelection}>
-              <label>
-                <input  className={styles.choice}
-                  type="radio"
-                  value="Admin"
-                  checked={userRole === 'Admin'}
-                  onChange={() => handleRoleChange('Admin')}
-                />
-                Admin
-              </label>
-              <label>
-                <input  className={styles.choice}
-                  type="radio"
-                  value="Clinic"
-                  checked={userRole === 'Clinic'}
-                  onChange={() => handleRoleChange('Clinic')}
-                />
-                Clinic
-              </label>
-              <label>
-                <input className={styles.choice}
-                  type="radio"
-                  value="Shelter"
-                  checked={userRole === 'Shelter'}
-                  onChange={() => handleRoleChange('Shelter')}
-                />
-                Shelter
-              </label>
-            </div>
-            <button type="submit" className={styles.button} onClick={() => navigate("/dashboard")}>
-              Log In
-            </button>
-          </form>
-          <p className={styles.footer}>
-            Not with us?{" "}
-            <span className={styles.link} onClick={() => navigate("/apply")}>
-              Apply!
-            </span>
-          </p>
-        </div>
+      <div className={styles.card}>
+        <h1 className={styles.title}>Log In</h1>
+        <p className={styles.subtitle}>
+          Please enter your credentials.
+        </p>
+        <form onSubmit={handleLogin} className={styles.form}>
+          <input
+            type="text"
+            placeholder="Email or Phone Number"
+            className={styles.input}
+            value={email}
+            onChange={(e) => setEmailOrUsername(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            className={styles.input}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <div className={styles.roleSelection}>
+            <label>
+              <input
+                className={styles.choice}
+                type="radio"
+                value="Admin"
+                checked={role === 'Admin'}
+                onChange={(e) => handleRoleChange(e.target.value)}
+              />
+              Admin
+            </label>
+            <label>
+              <input
+                className={styles.choice}
+                type="radio"
+                value="Clinic"
+                checked={role === 'Clinic'}
+                onChange={(e) => handleRoleChange(e.target.value)}
+              />
+              Clinic
+            </label>
+            <label>
+              <input
+                className={styles.choice}
+                type="radio"
+                value="Shelter"
+                checked={role === 'Shelter'}
+                onChange={(e) => handleRoleChange(e.target.value)}
+              />
+              Shelter
+            </label>
+          </div>
+          <button type="submit" className={styles.button}>
+            Log In
+          </button>
+        </form>
+        <p className={styles.footer}>
+          Not with us?{' '}
+          <span className={styles.link} onClick={() => navigate('/apply')}>
+            Apply!
+          </span>
+        </p>
+      </div>
     </div>
+    
   );
+  
 };
 
 export default LoginPage;
