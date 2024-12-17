@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css'; 
 import axios from 'axios';
+import { ADMIN_LOGIN } from './remote_source/remote_source';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -19,7 +20,9 @@ const LoginPage = () => {
     e.preventDefault();
     const loginField = isEmail(email) ? { email } : { phoneNumber: email };
     try {
-      const response = await axios.post('http://localhost:5000/api/admin/login', {
+      console.log('//////');
+      
+      const response = await axios.post(ADMIN_LOGIN, {
         ...loginField,
         password,
         role,
